@@ -65,3 +65,8 @@ resource "aws_route_table_association" "between_igw_route_and_public_subnet_a" {
   route_table_id = aws_route_table.secure_network.id
   subnet_id      = aws_subnet.public_subnet_a.id
 }
+
+resource "aws_route_table_association" "between_igw_route_and_public_subnet_c" {
+  route_table_id = aws_route_table.secure_network.id
+  subnet_id      = aws_subnet.public_subnet_c.id
+}
