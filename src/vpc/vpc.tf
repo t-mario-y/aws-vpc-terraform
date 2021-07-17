@@ -48,25 +48,25 @@ resource "aws_internet_gateway" "secure_network" {
   }
 }
 
-resource "aws_route_table" "secure_network" {
+resource "aws_route_table" "public" {
   vpc_id = aws_vpc.secure_networking.id
   tags = {
-    Name = "route-table-for-secure-network"
+    Name = "public-route-table-for-secure-network"
   }
 }
 
 resource "aws_route" "route_to_igw" {
-  route_table_id         = aws_route_table.secure_network.id
+  route_table_id         = aws_route_table.public.id
   gateway_id             = aws_internet_gateway.secure_network.id
   destination_cidr_block = "0.0.0.0/0"
 }
 
 resource "aws_route_table_association" "between_igw_route_and_public_subnet_a" {
-  route_table_id = aws_route_table.secure_network.id
+  route_table_id = aws_route_table.public.id
   subnet_id      = aws_subnet.public_subnet_a.id
 }
 
 resource "aws_route_table_association" "between_igw_route_and_public_subnet_c" {
-  route_table_id = aws_route_table.secure_network.id
+  route_table_id = aws_route_table.public.id
   subnet_id      = aws_subnet.public_subnet_c.id
 }
