@@ -35,3 +35,7 @@ resource "aws_security_group_rule" "internal_server_egress_rule" {
   from_port         = 0
   to_port           = 0
 }
+
+resource "aws_s3_bucket" "access_confirmation" {
+  bucket = "access-confirmation-for-t-mario-y"
+}
