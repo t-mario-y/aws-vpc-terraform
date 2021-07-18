@@ -1,13 +1,13 @@
 resource "aws_iam_role_policy_attachment" "ssm_full_access" {
-  role       = aws_iam_role.web_server.name
+  role       = aws_iam_role.ec2.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMFullAccess"
 }
 
-resource "aws_iam_role" "web_server" {
-  assume_role_policy = data.aws_iam_policy_document.assume_role_policy_for_web_server.json
+resource "aws_iam_role" "ec2" {
+  assume_role_policy = data.aws_iam_policy_document.assume_role_policy_for_ec2.json
 }
 
-data "aws_iam_policy_document" "assume_role_policy_for_web_server" {
+data "aws_iam_policy_document" "assume_role_policy_for_ec2" {
   statement {
     actions = ["sts:AssumeRole"]
     principals {
@@ -17,6 +17,6 @@ data "aws_iam_policy_document" "assume_role_policy_for_web_server" {
   }
 }
 
-resource "aws_iam_instance_profile" "web_server" {
-  role = aws_iam_role.web_server.name
+resource "aws_iam_instance_profile" "ec2" {
+  role = aws_iam_role.ec2.name
 }
