@@ -1,41 +1,49 @@
-resource "aws_vpc" "sub" {
-  cidr_block           = "10.1.0.0/16"
-  enable_dns_hostnames = true
+module "sub_vpc" {
+  source = "./vpc"
+  vpc_name                    = "sub"
+  cidr_block_of_vpc           = "10.1.0.0/16"
+  cidr_block_of_public_subnet = "10.1.0.0/24"
+}
+
+resource "aws_instance" "peering_test" {
+  ami           = "ami-0b276ad63ba2d6009"
+  instance_type = "t2.micro"
+  network_interface {
+    network_interface_id = aws_network_interface.peering_test.id
+    device_index         = 0
+  }
   tags = {
-    Name = "sub"
+    Name = "peering"
   }
 }
 
-resource "aws_subnet" "public_subnet_of_sub" {
-  vpc_id            = aws_vpc.sub.id
-  availability_zone = "ap-northeast-1a"
-  cidr_block        = "10.1.0.0/24"
+resource "aws_network_interface" "peering_test" {
+  subnet_id       = module.sub_vpc.public_subnet_id
+  private_ips     = ["10.1.0.100"]
+  security_groups = [aws_security_group.peering_test.id]
   tags = {
-    Name = "public-subnet-of-sub"
+    Name = "peering-test"
   }
 }
 
-resource "aws_route_table" "public_route_table_of_sub" {
-  vpc_id = aws_vpc.sub.id
-  tags = {
-    Name = "public-route-table-of-sub"
-  }
+resource "aws_security_group" "peering_test" {
+  vpc_id = module.sub_vpc.vpc.id
 }
 
-resource "aws_internet_gateway" "sub" {
-  vpc_id = aws_vpc.sub.id
-  tags = {
-    Name = "igw-of-sub"
-  }
+resource "aws_security_group_rule" "peering_test_ingress_rule" {
+  security_group_id = aws_security_group.peering_test.id
+  type              = "ingress"
+  cidr_blocks       = [module.main_vpc.vpc.cidr_block]
+  protocol          = "-1"
+  from_port         = 0
+  to_port           = 0
 }
 
-resource "aws_route_table_association" "public_route_of_sub" {
-  route_table_id = aws_route_table.public_route_table_of_sub.id
-  subnet_id      = aws_subnet.public_subnet_of_sub.id
-}
-
-resource "aws_route" "route_to_igw_of_sub" {
-  route_table_id         = aws_route_table.public_route_table_of_sub.id
-  gateway_id             = aws_internet_gateway.sub.id
-  destination_cidr_block = "0.0.0.0/0"
+resource "aws_security_group_rule" "peering_test_egress_rule" {
+  security_group_id = aws_security_group.peering_test.id
+  type              = "egress"
+  cidr_blocks       = ["0.0.0.0/0"]
+  protocol          = "-1"
+  from_port         = 0
+  to_port           = 0
 }
